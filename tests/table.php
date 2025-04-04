@@ -13,6 +13,8 @@
     );
 
     $options = Array(
+        'order_by'=>'balance',
+        'order_dir'=>'DESC',
         'columns'=>Array(
             Array(
                 'title'=>'Name', 
@@ -26,7 +28,10 @@
             Array(
                 'title'=>'Gen',
                 'key'=>'gender',
-                'hightlight'=>function($row){ if($row['gender'] == 'M') return C::C_BLUE; if($row['gender'] == 'F') return C::C_MAGENTA;  }
+                'hightlight'=>function($row){ 
+                    if($row['gender'] == 'M') return C::C_BLUE; 
+                    if($row['gender'] == 'F') return C::C_MAGENTA;  
+                }
             ),
             Array(
                 'title'=>'Balance',

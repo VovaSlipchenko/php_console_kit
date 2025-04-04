@@ -11,6 +11,8 @@
         private $separatorHorizontal = '-';
         private $separatorLength = 0;
         private $finalData = [];
+        private $orderBy = false;
+        private $orderDir = 'ASC';
 
         const HIGHTLIGHT_NAGATIVE = 1;
         const HIGHTLIGHT_POSITIVE = 2;
@@ -43,6 +45,9 @@
                 );
             }
 
+            $this->orderBy = isset($options['order_by'])?$options['order_by']:false;
+            $this->orderDir = isset($options['order_dir'])?$options['order_dir']:false;
+
         }
 
         function setData($data){
@@ -51,6 +56,11 @@
 
             foreach($this->columns as &$col){
                 $col['final_max_length'] = strlen($col['title']);
+            }
+
+            if($this->orderBy){
+                $column = array_column($data, $this->orderBy);
+                array_multisort($column, ($this->orderDir == 'DESC')?SORT_DESC:SORT_ASC, $data);
             }
 
             foreach($data as $row){
