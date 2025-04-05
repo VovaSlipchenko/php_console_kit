@@ -12,6 +12,7 @@
         private $separatorLength = 0;
         private $finalData = [];
         private $orderBy = false;
+        private $rowNumber = false;
         private $orderDir = 'ASC';
 
         const HIGHTLIGHT_NAGATIVE = 1;
@@ -26,14 +27,22 @@
                 $this->separator = $options['separator'];
             }
 
-            $spacingLeft = isset($options['spacingLeft'])?$options['spacingLeft']:1;
-            $spacingRight = $options['spacingRight']?$options['spacingRight']:1;
+            $spacingLeft = isset($options['spacing_left'])?$options['spacing_left']:1;
+            $spacingRight = isset($options['spacing_right'])?$options['spacing_right']:1;
 
+            $this->rowNumber = isset($options['row_number'])?$options['row_number']:false;
             $this->separator = str_repeat(' ', $spacingLeft).$this->separator.str_repeat(' ', $spacingRight);
             $this->separatorLength = strlen($this->separator);
 
             $this->separator = C::fc(C::C_GREY).$this->separator.C::fc();
             $this->separatorHorizontal = C::fc(C::C_GREY).$this->separatorHorizontal.C::fc();
+
+            if($this->rowNumber){
+                $this->columns[] = Array(
+                    'key'=>'$index',
+                    'title'=>'#'
+                );
+            }
 
             foreach($options['columns'] as $column){
                 $this->columns[] = Array(
@@ -63,29 +72,36 @@
                 array_multisort($column, ($this->orderDir == 'DESC')?SORT_DESC:SORT_ASC, $data);
             }
 
-            foreach($data as $row){
+            foreach($data as $index=>$row){
                 $finalRow = Array();
                 foreach($this->columns as &$col){
                     $value = '';
 
-                    if($col['proc']){
-                        $value = $col['proc']($row);
-                        //var_dump($value);
-                    } else if(isset($row[$col['key']])){
-                        $value = $row[$col['key']];
-                    }
+                    if($col['key'] == '$index'){
+                        $value = $index+1;
+                    } else {
 
-                    if(strlen($value) > $col['max_length']){
-                        $value = substr($value,0,$col['max_length']);
-                    }
+                        if($col['proc']){
+                            $value = $col['proc']($row);
+                            //var_dump($value);
+                        } else if(isset($row[$col['key']])){
+                            $value = $row[$col['key']];
+                        }
 
-                    if(strlen($value) > $col['final_max_length']){
-                        $col['final_max_length'] = strlen($value);
+                        if(strlen($value) > $col['max_length']){
+                            $value = substr($value,0,$col['max_length']);
+                        }
+
+                        if(strlen($value) > $col['final_max_length']){
+                            $col['final_max_length'] = strlen($value);
+                        }
+
                     }
 
                     $finalRow[$col['key']] = $value;
                 }
-                $this->finalData[] = $finalRow;    
+                $this->finalData[] = $finalRow;
+
             }
             
         }
@@ -112,7 +128,7 @@
 
                     $color = C::fc();
 
-                    if($col['hightlight']){
+                    if(isset($col['hightlight']) && $col['hightlight']){
                         if(is_callable($col['hightlight'])){
                             $color = $col['hightlight']($row);
                         }
