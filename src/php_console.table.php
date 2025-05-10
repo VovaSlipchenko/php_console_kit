@@ -7,13 +7,34 @@
     class PHPConsoleTable{
 
         private $columns;
-        private $separator = '|';
-        private $separatorHorizontal = '-';
+        private $separatorVertical = '│';
+        private $separator = '';
+        private $separatorHorizontal = '─';
+
+        private $separatorMiddleLeft = '├';
+        private $separatorMiddleRight = '┤';
+        private $separatorMiddleMiddle = '┼';
+
+        private $separatorTopLeft = '┌';
+        private $separatorTopRight = '┐';
+        private $separatorTopMiddle = '┬';
+
+        private $separatorBottomLeft = '└';
+        private $separatorBottomRight = '┘';
+        private $separatorBottomMiddle = '┴';
+
         private $separatorLength = 0;
         private $finalData = [];
         private $orderBy = false;
         private $rowNumber = false;
         private $orderDir = 'ASC';
+        private $separatorColor = C::C_WHITE;
+        private $spacingLeft;
+        private $spacingRight;
+
+        private $countMin = false;
+        private $countMax = false;
+        private $countAvg = false;
 
         const HIGHTLIGHT_NAGATIVE = 1;
         const HIGHTLIGHT_POSITIVE = 2;
@@ -27,15 +48,15 @@
                 $this->separator = $options['separator'];
             }
 
-            $spacingLeft = isset($options['spacing_left'])?$options['spacing_left']:1;
-            $spacingRight = isset($options['spacing_right'])?$options['spacing_right']:1;
+            $this->spacingLeft = isset($options['spacing_left'])?$options['spacing_left']:1;
+            $this->spacingRight = isset($options['spacing_right'])?$options['spacing_right']:1;
 
             $this->rowNumber = isset($options['row_number'])?$options['row_number']:false;
-            $this->separator = str_repeat(' ', $spacingLeft).$this->separator.str_repeat(' ', $spacingRight);
-            $this->separatorLength = strlen($this->separator);
+            $this->separator = str_repeat(' ', $this->spacingLeft).$this->separatorVertical.str_repeat(' ', $this->spacingRight);
+            $this->separatorWidth = mb_strlen($this->separator, 'UTF-8');
 
-            $this->separator = C::fc(C::C_GREY).$this->separator.C::fc();
-            $this->separatorHorizontal = C::fc(C::C_GREY).$this->separatorHorizontal.C::fc();
+            $this->separator = C::fc(C::C_WHITE).$this->separator.C::fc();
+            $this->separatorHorizontal = C::fc(C::C_WHITE).$this->separatorHorizontal.C::fc();
 
             if($this->rowNumber){
                 $this->columns[] = Array(
@@ -51,6 +72,9 @@
                     'max_length'=>isset($column['max_length'])?$column['max_length']:50,
                     'proc'=>isset($column['proc'])?$column['proc']:false,
                     'hightlight'=>isset($column['hightlight'])?$column['hightlight']:false,
+                    'min'=>null,
+                    'max'=>null,
+                    'avg'=>null,
                 );
             }
 
@@ -64,7 +88,7 @@
             $this->finalData = Array();
 
             foreach($this->columns as &$col){
-                $col['final_max_length'] = strlen($col['title']);
+                $col['final_max_length'] = mb_strlen($col['title'], "UTF-8");
             }
 
             if($this->orderBy){
@@ -93,7 +117,7 @@
                         }
 
                         if(strlen($value) > $col['final_max_length']){
-                            $col['final_max_length'] = strlen($value);
+                            $col['final_max_length'] = mb_strlen($value, "UTF-8");
                         }
 
                     }
@@ -109,22 +133,57 @@
         function print(){
 
             $tableWidth = 0;
+            $separatorTop = '';
+            $separatorMiddle = '';
+            $separatorBottom = '';
+            $titleRow = '';
 
-            foreach($this->columns as $col){
+            foreach($this->columns as $index=>$col){
+
                 $title = str_pad($col['title'], $col['final_max_length']);
-                $tableWidth+=strlen($title)+$this->separatorLength;
+                $titleWidth = mb_strlen($title, "UTF-8");
+                
+                $sectionWidth = $titleWidth+$this->separatorWidth-1;
+
+                $separatorMiddle.=str_repeat($this->separatorHorizontal, $sectionWidth);
+                $separatorTop.=str_repeat($this->separatorHorizontal, $sectionWidth);
+                $separatorBottom.=str_repeat($this->separatorHorizontal, $sectionWidth);
+                if($index != count($this->columns)-1){
+                    $separatorMiddle.=$this->separatorMiddleMiddle;
+                    $separatorTop.=$this->separatorTopMiddle;
+                    $separatorBottom.=$this->separatorBottomMiddle;
+                } else if($index != 0) {
+                    $separatorMiddle.=$this->separatorMiddleRight;
+                    $separatorTop.=$this->separatorTopRight;
+                    $separatorBottom.=$this->separatorBottomRight;
+                }
+
                 $title .= $this->separator;
-                echo $title;
+                $titleRow.=$title;
+
             }       
 
+            $titleRow = $this->separatorVertical.$this->spacingRight.$titleRow;
+            $separatorMiddle = $this->separatorMiddleLeft.$separatorMiddle;
+            $separatorTop = $this->separatorTopLeft.$separatorTop;
+            $separatorBottom = $this->separatorBottomLeft.$separatorBottom;
+
+            echo $separatorTop;
             PHPConsoleHelper::newLine();
-            echo str_repeat($this->separatorHorizontal, $tableWidth-1);
+            echo $titleRow;
+            PHPConsoleHelper::newLine();
+            echo $separatorMiddle;
             PHPConsoleHelper::newLine();
 
             foreach($this->finalData as $row){
-                foreach($this->columns as $col){
+                foreach($this->columns as $index=>$col){
+
                     $value = $row[$col['key']];
                     $valuePad = str_pad($value, $col['final_max_length']).$this->separator;
+
+                    if($index == 0){
+                        $valuePad = $this->separatorVertical.str_repeat(' ', $this->spacingRight).$valuePad;
+                    }
 
                     $color = C::fc();
 
@@ -134,10 +193,14 @@
                         }
                     }
 
-                    echo C::color($valuePad, $color); 
+                    echo C::color($valuePad, $color);
+
                 }
                 PHPConsoleHelper::newLine();
             }
+
+            echo $separatorBottom;
+            PHPConsoleHelper::newLine();
 
         }
 
