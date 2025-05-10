@@ -63,6 +63,23 @@
             echo "\n";
         }
 
+        public static function getStr($text){
+            foreach(self::$foregroundColors as $name=>$color){
+                $text = str_replace('<'.$name.'>', self::fc($name), $text);
+                $text = str_replace('</'.$name.'>', self::fc(self::C_DEFAULT), $text);
+            }
+            return $text;
+        }
+
+        public static function print($text, $color = false){
+            if($color){
+                echo self::fc($color);
+            }
+            echo self::getStr($text);
+            echo self::fc(self::C_DEFAULT);
+            echo self::newLine();
+        }
+
         public static function testColors(){
             foreach(self::$foregroundColors as $name=>$code){
                 echo self::color('test color ['.$name.'] (regulat)', $name);

@@ -4,4 +4,5 @@
 
     use \PHPConsole\PHPConsoleHelper as C;
 
-    C::testColors();
+    //C::testColors();
+    C::print('<red>test</red> <green>colorful</green> <blue>string</blue>');
