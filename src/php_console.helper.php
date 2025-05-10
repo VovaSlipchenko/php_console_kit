@@ -4,8 +4,12 @@
 
     class PHPConsoleHelper{
 
+        private static $time_marks = Array();
+
         public static $defaultColor = 'white';
         public static $defaultBgColor = 'white';
+
+        const DEFAULT_TIMEMARK_NAME = 'process';
 
         const C_DEFAULT = 'default';
         const C_WHITE = 'white';
@@ -78,6 +82,86 @@
             echo self::getStr($text);
             echo self::fc(self::C_DEFAULT);
             echo self::newLine();
+        }
+
+        public static function simple($text, $level = 0){
+            self::log("", "", $text, $level);
+        }
+
+        public static function inactive($text, $level = 0){
+            self::log('gray', "info", $text, $level);
+        }
+
+        public static function success($text, $level = 0){
+            self::log('green', "success", $text, $level);
+        }
+
+        public static function error($text, $level = 0){
+            self::log('red', "error  ", $text, $level);
+        }
+
+        public static function warning($text, $level = 0){
+            self::log('yellow', "error  ", $text, $level);
+        }
+
+        public static function info($text, $level = 0){
+            self::log('blue', "info   ", $text, $level);
+        }
+
+        public static function printTime(){
+            $format = 'H:i:s';
+            echo "[".date('H:i:s')."] ";
+        }
+
+        public static function log($color, $prefix = '', $text, $level = 0){
+
+            $str = str_repeat("  ", $level);
+
+            if($prefix){
+                $str .= "[".self::color($prefix, $color)."] ";
+                //$str .= "[".$color.$prefix."\e[39m]";
+            }
+
+            self::printTime(false);
+
+            $str .= $text;
+            $str .= "\r\n";
+
+            echo $str;
+
+        }
+
+        public static function setTimeMark($name = self::DEFAULT_TIMEMARK_NAME){
+            self::$time_marks[$name] = microtime(true);
+        }
+
+        public static function getTimeMark($name = self::DEFAULT_TIMEMARK_NAME, $millisecondsMode = false){
+            if(isset(self::$time_marks[$name])){
+                $milliseconds = round(microtime(true) - self::$time_marks[$name])*1000;
+                $seconds = $milliseconds / 1000;
+                if($millisecondsMode){
+                    $output = $milliseconds." ms";
+                } else {
+                    $output = sprintf('%02d:%02d:%02d', intval($seconds/ 3600),intval($seconds/ 60 % 60), intval($seconds% 60));
+                }
+                self::print($name." finished in ".$output);
+            } else {
+                self::error("Time mark '".$name."' is not set");
+            }
+        }
+
+        public static function getTimeMarkMs($name = self::DEFAULT_TIMEMARK_NAME){
+            self::getTimeMark($name, true);
+        }
+
+        public static function progress($total, $current){
+
+            $perc = ($current / $total) * 100;            
+            echo "\r";
+            echo "                                              ";
+            echo "\r";
+            echo str_pad(round($perc, 1),5, ' ', STR_PAD_LEFT)."% (".$current."/".$total.")";
+
         }
 
         public static function testColors(){
