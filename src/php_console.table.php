@@ -40,8 +40,6 @@
         const HIGHTLIGHT_POSITIVE = 2;
         const HIGHTLIGHT_NEGATIVE_POSITIVE = 3;
 
-        
-
         function __construct($options){
 
             if(isset($options['separator'])){
@@ -168,11 +166,11 @@
             $separatorTop = $this->separatorTopLeft.$separatorTop;
             $separatorBottom = $this->separatorBottomLeft.$separatorBottom;
 
-            echo $separatorTop;
+            C::e($separatorTop);
             PHPConsoleHelper::newLine();
-            echo $titleRow;
+            C::e($titleRow);
             PHPConsoleHelper::newLine();
-            echo $separatorMiddle;
+            C::e($separatorMiddle);
             PHPConsoleHelper::newLine();
 
             foreach($this->finalData as $row){
@@ -193,13 +191,13 @@
                         }
                     }
 
-                    echo C::color($valuePad, $color);
+                    C::e(C::color($valuePad, $color));
 
                 }
                 PHPConsoleHelper::newLine();
             }
 
-            echo $separatorBottom;
+            C::e($separatorBottom);
             PHPConsoleHelper::newLine();
 
         }

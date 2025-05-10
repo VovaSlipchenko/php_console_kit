@@ -9,6 +9,8 @@
         public static $defaultColor = 'white';
         public static $defaultBgColor = 'white';
 
+        public static $allowEverywhere = false;
+
         const DEFAULT_TIMEMARK_NAME = 'process';
 
         const C_DEFAULT = 'default';
@@ -45,6 +47,14 @@
             'grey' => '47',
         ];
 
+        public static function e($text){ 
+            if (php_sapi_name() == "cli" || self::$allowEverywhere) {
+                echo $text;
+            } else {
+                // Not in cli
+            }
+        }
+
         public static function fc($color = 'default', $bold = false){
 
 
@@ -64,7 +74,7 @@
         }
         
         public static function newLine(){
-            echo "\n";
+            self::e("\n");
         }
 
         public static function getStr($text){
@@ -77,11 +87,11 @@
 
         public static function print($text, $color = false){
             if($color){
-                echo self::fc($color);
+                self::e(self::fc($color));
             }
-            echo self::getStr($text);
-            echo self::fc(self::C_DEFAULT);
-            echo self::newLine();
+            self::e(self::getStr($text));
+            self::e(self::fc(self::C_DEFAULT));
+            self::e(self::newLine());
         }
 
         public static function simple($text, $level = 0){
@@ -110,7 +120,7 @@
 
         public static function printTime(){
             $format = 'H:i:s';
-            echo "[".date('H:i:s')."] ";
+            self::e("[".date('H:i:s')."] ");
         }
 
         public static function log($color, $prefix = '', $text, $level = 0){
@@ -127,7 +137,7 @@
             $str .= $text;
             $str .= "\r\n";
 
-            echo $str;
+            self::e($str);
 
         }
 
@@ -157,18 +167,18 @@
         public static function progress($total, $current){
 
             $perc = ($current / $total) * 100;            
-            echo "\r";
-            echo "                                              ";
-            echo "\r";
-            echo str_pad(round($perc, 1),5, ' ', STR_PAD_LEFT)."% (".$current."/".$total.")";
+            self::e("\r");
+            self::e("                                              ");
+            self::e("\r");
+            self::e(str_pad(round($perc, 1),5, ' ', STR_PAD_LEFT)."% (".$current."/".$total.")");
 
         }
 
         public static function testColors(){
             foreach(self::$foregroundColors as $name=>$code){
-                echo self::color('test color ['.$name.'] (regulat)', $name);
+                self::e(self::color('test color ['.$name.'] (regulat)', $name));
                 self::newLine();
-                echo self::color('test color ['.$name.'] (bold)', $name, true);
+                self::e(self::color('test color ['.$name.'] (bold)', $name, true));
                 self::newLine();
             }
         }
